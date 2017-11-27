@@ -18,10 +18,10 @@ public class OperacoesConjunto {
 
 		//Todos os elementos de A e Todos os elementos de B
 		for(Rating a : ratingsA){
-			unionAB.add(a.movieId);
+			unionAB.add(a.getMovieId());
 		}
 		for(Rating b : ratingsB){
-			unionAB.add(b.movieId);
+			unionAB.add(b.getMovieId());
 		}
 		return unionAB;
 	}
@@ -32,8 +32,8 @@ public class OperacoesConjunto {
 
 		for(Rating a : ratingsA){
 			for(Rating b : ratingsB){
-				if(a.movieId == b.movieId){
-					intersectionAB.add(a.movieId);
+				if(a.getMovieId() == b.getMovieId()){
+					intersectionAB.add(a.getMovieId());
 				}
 			}
 		}

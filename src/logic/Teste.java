@@ -8,6 +8,7 @@ import dao.MovieDAO;
 import dao.RatingDAO;
 import model.Movie;
 import model.Rating;
+import model.Similarity;
 
 public class Teste {
 	
@@ -15,7 +16,7 @@ public class Teste {
 		MovieDAO moviedao = new MovieDAO();
 		List<Movie> movies = moviedao.selectAllMovies();
 		for(Movie m : movies){
-			System.out.println("MovieId: " + m.movieId + "; Title: " + m.title);
+			System.out.println("MovieId: " + m.getMovieId() + "; Title: " + m.getTitle());
 		}
 		System.out.println(movies.size());
 	}
@@ -24,7 +25,7 @@ public class Teste {
 		RatingDAO ratingdao = new RatingDAO();
 		List<Rating> ratings = ratingdao.selectAllRatingByRating(1);
 		for(Rating r : ratings){
-			System.out.println("Id: " + r.id + "; UserId: " + r.userId + "; MovieId: " + r.movieId + "; Rating: " + r.rating);
+			System.out.println("Id: " + r.getId() + "; UserId: " + r.getUserId() + "; MovieId: " + r.getMovieId() + "; Rating: " + r.getRating());
 		}
 		System.out.println(ratings.size());
 	}
@@ -37,7 +38,7 @@ public class Teste {
 		System.out.println(ratingdao.getQtdUsers());
 	}
 	
-	public static void Teste4(){
+	public static void Teste4(){ // Jaccard e Cosseno Testes
 		Rating a = new Rating(1, 1, 1, 4);
 		Rating b = new Rating(2, 1, 2, 1);
 		Rating c = new Rating(3, 1, 4, 5);
@@ -74,8 +75,22 @@ public class Teste {
 		System.out.println("Cosseno = " + cos.numerator(ratingsA, ratingsB) / cos.denominator(ratingsA, ratingsB));
 	}
 	
+	public static void Teste5(){ // Jaccard e Cosseno Testes no Banco
+		Recomendar recomendacao = new Recomendar(1, 3);
+		Similarity s = recomendacao.recomendarUsingJaccardAndCosseno();
+		
+		System.out.println("União: " + s.getUnion());
+		System.out.println("-----");
+		System.out.println("Intersecção: " + s.getIntersection());
+		System.out.println("-----");
+		System.out.println("Similaridade: " + s.getSimilarity());
+		System.out.println("Distância de Jaccard: " + s.getDistanceJaccard());
+		System.out.println("Distância de Cosseno: " + s.getDistanceCosseno());
+		
+	}
+	
 	public static void main(String[] args) {
-		Teste4();
+		Teste5();
 	}
 
 }
