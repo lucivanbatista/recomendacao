@@ -1,5 +1,6 @@
 package logic;
 
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -76,8 +77,18 @@ public class Teste {
 	}
 	
 	public static void Teste5(){ // Jaccard e Cosseno Testes no Banco
-		Recomendar recomendacao = new Recomendar(1, 3);
-		Similarity s = recomendacao.recomendarUsingJaccardAndCosseno();
+		RatingDAO ratingdao = new RatingDAO();
+		int userIdA = 1;
+		int userIdB = 3;
+		
+		System.out.println("Pegando do Banco os Ratings de A");
+		List<Rating> ratingsA = ratingdao.selectAllRatingByUserId(userIdA); // Aqui possuo os ratings de A e B		
+		System.out.println("Pegando do Banco os Ratings de B");
+		List<Rating> ratingsB = ratingdao.selectAllRatingByUserId(userIdB);
+		
+		Similarity s = new Similarity(userIdA, userIdB, ratingsA, ratingsB);
+		Recomendar recomendar = new Recomendar();
+		recomendar.recomendarUsingJaccardAndCosseno(s);
 		
 		System.out.println("União: " + s.getUnion());
 		System.out.println("-----");
@@ -86,11 +97,53 @@ public class Teste {
 		System.out.println("Similaridade: " + s.getSimilarity());
 		System.out.println("Distância de Jaccard: " + s.getDistanceJaccard());
 		System.out.println("Distância de Cosseno: " + s.getDistanceCosseno());
+	}
+	
+	public static void Teste6(){
+		List<Similarity> rec = new ArrayList<>();
+		RatingDAO ratingdao = new RatingDAO();
+		int userIdA = 1;
+		
+		System.out.println("Pegando do Banco os Ratings de A");
+		List<Rating> ratingsA = ratingdao.selectAllRatingByUserId(userIdA); // Aqui possuo os ratings de A e B
+		
+		Recomendar recomendacao = new Recomendar();
+		
+		for(int userIdB = 3000; userIdB < 3500; userIdB++){
+//			System.out.println("Pegando do Banco os Ratings de B");
+			List<Rating> ratingsB = ratingdao.selectAllRatingByUserId(userIdB);
+			Similarity s = new Similarity(userIdA, userIdB, ratingsA, ratingsB);
+			
+			s = recomendacao.recomendarUsingJaccardAndCosseno(s);
+			
+			if(s.getSimilarity() >= 0.1){
+				rec.add(s);
+			}
+			
+			System.out.println(userIdB);
+		}
+		exportarCSV("rec3", rec);
 		
 	}
 	
+	public static void exportarCSV(String fileName, List<Similarity> list){
+		try{
+			PrintWriter writer = new PrintWriter(fileName, "UTF-8");
+			writer.println("userIdB;intersection;similarity;distanceJ;distanceCos");
+			System.out.println("Exportando...");
+			for (Similarity s : list) {
+				writer.println(s.getUserIdB()+";"+s.getIntersection()+";"+s.getSimilarity()+";"+s.getDistanceJaccard()+";"+s.getDistanceCosseno());
+			}
+			System.out.println("Arquivo Exportado com sucesso!");
+			
+			writer.close();
+		}catch (Exception e) {
+			System.out.println("[ERROR]: "+e.toString());
+		}
+	}
+		
 	public static void main(String[] args) {
-		Teste5();
+		Teste6();
 	}
 
 }
