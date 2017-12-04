@@ -17,29 +17,6 @@ public class MovieDAO {
 		this.connection = new ConnectionFactory().getConnection();
 	}
 	
-	public List<Movie> selectAllMoviesComplete(){
-		String sql = "SELECT * FROM movies";
-		
-		try {
-			ArrayList<Movie> movies = new ArrayList<>();
-			PreparedStatement st = connection.prepareStatement(sql);
-			ResultSet rs = st.executeQuery();
-			
-			while(rs.next()){
-				Movie m = new Movie(rs.getInt("movieid"), rs.getString("title"), rs.getString("genres"));
-				movies.add(m);
-			}
-			
-			rs.close();
-			st.close();
-			
-			return movies;
-		} catch (Exception e) {
-			System.out.println("[ERROR]: " + e.toString());
-		}
-		return null;
-	}
-	
 	public List<Movie> selectAllMovies(){
 		String sql = "SELECT * FROM movies";
 		

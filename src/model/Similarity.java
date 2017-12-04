@@ -7,9 +7,10 @@ public class Similarity {
 
 	private int userIdA;
 	private int userIdB;
-	private double similarity;
+	private double similarityJaccard;
 	private double distanceJaccard;
 	private double distanceCosseno;
+	private double pearsonCorrelation;
 	private List<Rating> ratingsA;
 	private List<Rating> ratingsB;
 	
@@ -35,20 +36,26 @@ public class Similarity {
 	public Similarity(int userIdA, int userIdB, double similarity, double distanceJaccard) {
 		this.userIdA = userIdA;
 		this.userIdB = userIdB;
-		this.similarity = similarity;
+		this.similarityJaccard = similarity;
 		this.distanceJaccard = distanceJaccard;
 	}
 	
 	public Similarity(double similarity, double distanceJaccard) {
-		this.similarity = similarity;
+		this.similarityJaccard = similarity;
 		this.distanceJaccard = distanceJaccard;
 	}
 	
-	public Similarity(int userIdA, int userIdB, double distanceCosseno) {
-		this.userIdA = userIdA;
-		this.userIdB = userIdB;
-		this.distanceCosseno = distanceCosseno;
-	}
+//	public Similarity(int userIdA, int userIdB, double distanceCosseno) {
+//		this.userIdA = userIdA;
+//		this.userIdB = userIdB;
+//		this.distanceCosseno = distanceCosseno;
+//	}
+//	
+//	public Similarity(int userIdA, int userIdB, double pearsonCorrelation) {
+//		this.userIdA = userIdA;
+//		this.userIdB = userIdB;
+//		this.setPearsonCorrelation(pearsonCorrelation);
+//	}
 	
 	public Similarity(double distanceCosseno) {
 		this.distanceCosseno = distanceCosseno;
@@ -71,11 +78,11 @@ public class Similarity {
 	}
 
 	public double getSimilarity() {
-		return similarity;
+		return similarityJaccard;
 	}
 
 	public void setSimilarity(double similarity) {
-		this.similarity = similarity;
+		this.similarityJaccard = similarity;
 	}
 
 	public double getDistanceJaccard() {
@@ -108,5 +115,13 @@ public class Similarity {
 
 	public void setIntersection(Set<Integer> intersection) {
 		this.intersection = intersection;
+	}
+
+	public double getPearsonCorrelation() {
+		return pearsonCorrelation;
+	}
+
+	public void setPearsonCorrelation(double pearsonCorrelation) {
+		this.pearsonCorrelation = pearsonCorrelation;
 	}
 }

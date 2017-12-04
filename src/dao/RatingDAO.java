@@ -17,7 +17,7 @@ public class RatingDAO {
 	}
 	
 	public List<Rating> selectAllRating(){
-		String sql = "SELECT * FROM ratings";
+		String sql = "SELECT * FROM ratings_norm";
 		
 		try {
 			ArrayList<Rating> ratings = new ArrayList<>();
@@ -40,7 +40,7 @@ public class RatingDAO {
 	}
 
 	public List<Rating> selectAllRatingByMovieId(int movieId){
-		String sql = "SELECT * FROM ratings where movieid = " + movieId;
+		String sql = "SELECT * FROM ratings_norm where movieid = " + movieId;
 		
 		try {
 			ArrayList<Rating> ratings = new ArrayList<>();
@@ -63,7 +63,7 @@ public class RatingDAO {
 	}
 	
 	public List<Rating> selectAllRatingByUserId(int userId){
-		String sql = "SELECT * FROM ratings where userid = " + userId;
+		String sql = "SELECT * FROM ratings_norm where userid = " + userId;
 		
 		try {
 			ArrayList<Rating> ratings = new ArrayList<>();
@@ -86,7 +86,7 @@ public class RatingDAO {
 	}
 	
 	public List<Rating> selectAllRatingByRating(double rating){
-		String sql = "SELECT * FROM ratings where rating = " + rating;
+		String sql = "SELECT * FROM ratings_norm where rating = " + rating;
 		
 		try {
 			ArrayList<Rating> ratings = new ArrayList<>();
@@ -109,7 +109,7 @@ public class RatingDAO {
 	}
 	
 	public int getQtdUsers(){
-		String sql = "select count(distinct userid) from ratings";
+		String sql = "select count(distinct userid) from ratings_norm";
 		
 		try {
 			PreparedStatement st = connection.prepareStatement(sql);

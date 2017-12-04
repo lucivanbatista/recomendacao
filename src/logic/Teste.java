@@ -88,7 +88,7 @@ public class Teste {
 		
 		Similarity s = new Similarity(userIdA, userIdB, ratingsA, ratingsB);
 		Recomendar recomendar = new Recomendar();
-		recomendar.recomendarUsingJaccardAndCosseno(s);
+		recomendar.recomendarUsingAll(s);
 		
 		System.out.println("União: " + s.getUnion());
 		System.out.println("-----");
@@ -108,13 +108,14 @@ public class Teste {
 		List<Rating> ratingsA = ratingdao.selectAllRatingByUserId(userIdA); // Aqui possuo os ratings de A e B
 		
 		Recomendar recomendacao = new Recomendar();
-		
-		for(int userIdB = 3000; userIdB < 3500; userIdB++){
+		List<Rating> ratingsB;
+		for(int userIdB = 2; userIdB < 100; userIdB++){
 //			System.out.println("Pegando do Banco os Ratings de B");
-			List<Rating> ratingsB = ratingdao.selectAllRatingByUserId(userIdB);
+			//OTIMIZAÇÃO -> CRIAR UM MAP<IDUSUÁRIO,LISTA DE RATINGS>
+			ratingsB = ratingdao.selectAllRatingByUserId(userIdB);
 			Similarity s = new Similarity(userIdA, userIdB, ratingsA, ratingsB);
 			
-			s = recomendacao.recomendarUsingJaccardAndCosseno(s);
+			s = recomendacao.recomendarUsingAll(s);
 			
 			if(s.getSimilarity() >= 0.1){
 				rec.add(s);
@@ -122,17 +123,17 @@ public class Teste {
 			
 			System.out.println(userIdB);
 		}
-		exportarCSV("rec3", rec);
+		exportarCSV("rec1", rec);
 		
 	}
 	
 	public static void exportarCSV(String fileName, List<Similarity> list){
 		try{
 			PrintWriter writer = new PrintWriter(fileName, "UTF-8");
-			writer.println("userIdB;intersection;similarity;distanceJ;distanceCos");
+			writer.println("userIdA;userIdB;intersection;similarity;distanceJ;distanceCos;pearsonCorrelation");
 			System.out.println("Exportando...");
 			for (Similarity s : list) {
-				writer.println(s.getUserIdB()+";"+s.getIntersection()+";"+s.getSimilarity()+";"+s.getDistanceJaccard()+";"+s.getDistanceCosseno());
+				writer.println(s.getUserIdA()+";"+s.getUserIdB()+";"+s.getIntersection()+";"+s.getSimilarity()+";"+s.getDistanceJaccard()+";"+s.getDistanceCosseno()+";"+s.getPearsonCorrelation());
 			}
 			System.out.println("Arquivo Exportado com sucesso!");
 			

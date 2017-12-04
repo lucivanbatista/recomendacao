@@ -6,23 +6,14 @@ public class Recomendar {
 	
 	private Jaccard j;
 	private Cosseno cos;
-//	private RatingDAO ratingdao;
+	private Pearson p;
 	private Similarity s;
-	
-//	public Recomendar(int userIdA, int userIdB) {
-//		j = new Jaccard();
-//		cos = new Cosseno();
-//		ratingdao = new RatingDAO();
-//		this.userIdA = userIdA;
-//		this.userIdB = userIdB;
-//		this.s = getRatingsAB(this.userIdA, this.userIdB);
-//	}
 	
 	public Recomendar(/*Similarity s*/) {
 		j = new Jaccard();
 		cos = new Cosseno();
-//		ratingdao = new RatingDAO();
-//		this.s = s;
+		p = new Pearson();
+		System.out.println("Iniciando a captura dos outros Usuários");
 	}
 	
 	public void recomendarUsingJaccard(){
@@ -33,24 +24,17 @@ public class Recomendar {
 		this.s = cos.cosseno(s);
 	}
 	
-	public Similarity recomendarUsingJaccardAndCosseno(Similarity s){
+	public void recomendarUsingPearson(){
+		this.s = p.pearson(s);
+	}
+	
+	public Similarity recomendarUsingAll(Similarity s){
 		this.s = s;
 		recomendarUsingJaccard();
 		recomendarUsingCosseno();
+		recomendarUsingPearson();
 		return this.s;
 	}
-	
-//	public Similarity getRatingsAB(int userIdA, int userIdB){
-//		System.out.println("Iniciando...");
-//		
-//		//I. Fazer a Matriz
-//		System.out.println("Pegando do Banco os Ratings de A");
-//		List<Rating> ratingsA = ratingdao.selectAllRatingByUserId(userIdA); // Aqui possuo os ratings de A e B
-//		System.out.println("Pegando do Banco os Ratings de B");
-//		List<Rating> ratingsB = ratingdao.selectAllRatingByUserId(userIdB);
-//		this.s = new Similarity(userIdA, userIdB, ratingsA, ratingsB);
-//		return s;
-//	}
 
 	public Similarity getS() {
 		return s;
