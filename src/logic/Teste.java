@@ -105,7 +105,7 @@ public class Teste {
 		int userIdA = 1;
 		
 		System.out.println("Pegando do Banco os Ratings de A");
-		List<Rating> ratingsA = ratingdao.selectAllRatingByUserId(userIdA); // Aqui possuo os ratings de A e B
+		List<Rating> ratingsA = ratingdao.selectAllRatingByUserId(userIdA); // Aqui possuo os ratings de A 
 		
 		Recomendar recomendacao = new Recomendar();
 		List<Rating> ratingsB;
@@ -127,6 +127,42 @@ public class Teste {
 		
 	}
 	
+	public static void Teste7(){ // Pearson teste
+		Rating a = new Rating(1, 1, 1, 4);
+		Rating b = new Rating(2, 1, 2, 3);
+//		Rating c = new Rating(3, 1, 3, 5);
+		
+		Rating d = new Rating(4, 2, 1, 4.5);
+		Rating e = new Rating(5, 2, 2, 3.5);
+		
+		List<Rating> ratingsA = new ArrayList<>();
+		List<Rating> ratingsB = new ArrayList<>();
+		
+		ratingsA.add(a);
+		ratingsA.add(b);
+//		ratingsA.add(c);
+		ratingsB.add(d);
+		ratingsB.add(e);
+		
+		Recomendar r = new Recomendar();
+		Similarity s = new Similarity(1, 2, ratingsA, ratingsB);
+		r.recomendarUsingAll(s);
+		
+		System.out.println(s.getUnion());
+		System.out.println("-----");
+		System.out.println(s.getIntersection());
+		System.out.println("-----");
+		System.out.println("Similaridade = " + s.getSimilarity());
+		System.out.println("-----");
+		System.out.println("Cosseno = " + s.getDistanceCosseno());
+		System.out.println("Pearson = " + s.getPearsonCorrelation());
+	}
+
+	public static void Teste8(){
+		Prediction p = new Prediction();
+		p.predicao(1, "user1");
+	}
+	
 	public static void exportarCSV(String fileName, List<Similarity> list){
 		try{
 			PrintWriter writer = new PrintWriter(fileName, "UTF-8");
@@ -144,7 +180,7 @@ public class Teste {
 	}
 		
 	public static void main(String[] args) {
-		Teste6();
+		Teste8();
 	}
 
 }

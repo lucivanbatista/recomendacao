@@ -9,11 +9,10 @@ public class Recomendar {
 	private Pearson p;
 	private Similarity s;
 	
-	public Recomendar(/*Similarity s*/) {
+	public Recomendar() {
 		j = new Jaccard();
 		cos = new Cosseno();
 		p = new Pearson();
-		System.out.println("Iniciando a captura dos outros Usuários");
 	}
 	
 	public void recomendarUsingJaccard(){
