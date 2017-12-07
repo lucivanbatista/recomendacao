@@ -2,6 +2,7 @@ package logic;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -20,7 +21,7 @@ public class Prediction {
 		ratingdao = new RatingDAO();
 	}
 
-	public void predicao(int userIdA, String fileName){ // userId que eu quero fazer a predição
+	public void prePredicao(int userIdA, String fileName){ // userId que eu quero fazer a predição
 		//1. Reduzir a consulta
 		List<Rating> ratings = preProcessamentoOtimizacao(userIdA);
 
@@ -32,12 +33,15 @@ public class Prediction {
 
 		//2. Pegar os ratings de A
 		List<Rating> ratingsA = ratingsAll.get(userIdA);
-
+		
 		//3. Para cada usuário irei analisar a similaridade com o userIdA
 		List<Similarity> similarities = new ArrayList<>();
 
-		Set<Integer> allUsers = ratingsAll.keySet();
+		Set<Integer> allUsers = ratingsAll.keySet(); //Todos os usuários
 		allUsers.remove(userIdA);
+		
+		//Observação: Aqui já iremos começar o processo para predição, iremos colocar nesse map os semelhantes de A
+		Map<Integer, List<Rating>> ratingsMini = new HashMap<>();
 		
 		System.out.println("Iniciando cálculos de similaridade...");
 		for(Integer userIdB : allUsers){
@@ -48,20 +52,77 @@ public class Prediction {
 			s = this.recomendacao.recomendarUsingAll(s);
 
 			if(s.getDistanceCosseno() >= 0.6 || s.getPearsonCorrelation() >= 0.6 || s.getPearsonCorrelation() <= -0.6){
-				similarities.add(s);
+				similarities.add(s); // Calcular as similaridades
+				ratingsMini.put(userIdB, ratingsB); // Usado para predição
 			}
 		}
 		System.out.println("Finalizado os cálculos de similaridade!");
 		
+		ratingsAll = null; // Garbage Collection irá funcionar
+		ratings = null;
+		System.gc();
+		
 		// Exportar e excluir tabela de otimização
 		exportCSV(fileName, similarities);
 		this.ratingdao.deleteTableReduction();
+		
+		predicao(ratingsMini, ratingsA);
+	}
+	
+	public void predicao(Map<Integer,List<Rating>> ratingsMini, List<Rating> ratingsA){ // RECOMENDAR FILMES OU ***ESTIMAR UMA NOTA QUE O USUÁRIO PODERÁ DAR***?
+//		//Até agora, eu possuo um map com as chaves sendo os usuários semelhantes e A, e todos os seus filmes e seus ratings
+		
+		Map<Integer, Integer> movies = contarMovies(ratingsMini); // Contar os filmes para cálculos futuros (remover os menos assistidos)
+		
+		for(Rating r : ratingsA){ // Removendo os filmes que A já assistiu
+			movies.remove(r.getMovieId());
+		}
+		
+		Map<Integer, Integer> moviesPosReduction = new HashMap<>();
+		
+		for(Integer movieId : movies.keySet()){ // Removendo os filmes que possuem do total de usuários similares um pouco acima da metade não assistiu
+			if(movies.get(movieId) > (ratingsMini.size() / 1.5)){
+				moviesPosReduction.put(movieId, movies.get(movieId));
+			}
+		}
+		
+		movies = null;
+		
+		System.out.println("Lista de Possíveis Filmes: ");
+		// A explicação é a seguinte, já que foi realizado um corte dos usuários para os que pelo menos assistiram a metade de filmes de userIdA
+		// E depois foi realizado os cálculos de similaridade, buscando fazer com que os usuários mais similares fossem pegos
+		// Os filmes desses usuários foram pegados, os que A já assistiu foram removidos e depois foram descartados os filmes que apenas alguns usuários
+		// semelhantes assistiram, sobrando apenas os mais assistidos por eles
+		// Agora é só realizar mais um cálculo da predição
+		for(Integer movieId : moviesPosReduction.keySet()){
+			System.out.println("Id: " + movieId + ", Quantidade: " + moviesPosReduction.get(movieId));
+		}
+		System.out.println("----------------");
+		System.out.println("Quantidade de Filmes Possíveis: " + moviesPosReduction.size());
+		
 	}
 
+	public Map<Integer, Integer> contarMovies(Map<Integer,List<Rating>> ratingsMini){
+		Map<Integer, Integer> movies = new HashMap<>(); // Lista com os filmes dos usuários semelhantes a A
+		
+		for(Integer userSimilar : ratingsMini.keySet()){ // Contagem dos filmes
+			List<Rating> ratingsSimilar = ratingsMini.get(userSimilar);
+			for(Rating r : ratingsSimilar){
+				if(movies.containsKey(r.getMovieId())){
+					movies.put(r.getMovieId(), movies.get(r.getMovieId()) + 1);
+				}else{
+					movies.put(r.getMovieId(), 1);
+				}
+			}
+		}
+		
+		return movies;
+	}
+	
 	public List<Rating> preProcessamentoOtimizacao(int userId){
 		System.out.println("Organizando o banco... criando tabela para otimização");
 		this.ratingdao.createTableReduction();
-		System.out.println("Inserindo elementos para otimização...");
+		System.out.println("Inserindo elementos na tabela para otimização...");
 		this.ratingdao.insertTableReduction(userId);
 		System.out.println("Recebendo ratings...");
 		List<Rating> ratings = this.ratingdao.selectTableReduction(userId);

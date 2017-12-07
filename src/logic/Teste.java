@@ -160,7 +160,7 @@ public class Teste {
 
 	public static void Teste8(){
 		Prediction p = new Prediction();
-		p.predicao(1, "user1");
+		p.prePredicao(1, "user1");
 	}
 	
 	public static void exportarCSV(String fileName, List<Similarity> list){
@@ -180,7 +180,7 @@ public class Teste {
 	}
 		
 	public static void main(String[] args) {
-		Teste8();
+//		Teste8();
 	}
 
 }
