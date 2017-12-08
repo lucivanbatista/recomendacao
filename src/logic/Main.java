@@ -4,7 +4,7 @@ public class Main {
 
 	public static void main(String[] args) {
 		Prediction p = new Prediction();
-		p.prePredicao(1, "user1");
+		p.iniciarPredicao(1, "user1");
 	}
 
 }

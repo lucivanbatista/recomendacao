@@ -21,7 +21,7 @@ public class Prediction {
 		ratingdao = new RatingDAO();
 	}
 
-	public void prePredicao(int userIdA, String fileName){ // userId que eu quero fazer a predição
+	public void iniciarPredicao(int userIdA, String fileName){ // userId que eu quero fazer a predição
 		//1. Reduzir a consulta
 		List<Rating> ratings = preProcessamentoOtimizacao(userIdA);
 
@@ -66,10 +66,11 @@ public class Prediction {
 		exportCSV(fileName, similarities);
 		this.ratingdao.deleteTableReduction();
 		
-		predicao(ratingsMini, ratingsA);
+		Map<Integer, Integer> moviesReduction = reductionMovies(ratingsMini, ratingsA);
+		predicao(moviesReduction, ratingsMini, similarities);
 	}
 	
-	public void predicao(Map<Integer,List<Rating>> ratingsMini, List<Rating> ratingsA){ // RECOMENDAR FILMES OU ***ESTIMAR UMA NOTA QUE O USUÁRIO PODERÁ DAR***?
+	public Map<Integer, Integer> reductionMovies(Map<Integer,List<Rating>> ratingsMini, List<Rating> ratingsA){ // RECOMENDAR FILMES
 //		//Até agora, eu possuo um map com as chaves sendo os usuários semelhantes e A, e todos os seus filmes e seus ratings
 		
 		Map<Integer, Integer> movies = contarMovies(ratingsMini); // Contar os filmes para cálculos futuros (remover os menos assistidos)
@@ -88,20 +89,27 @@ public class Prediction {
 		
 		movies = null;
 		
-		System.out.println("Lista de Possíveis Filmes: ");
+		
 		// A explicação é a seguinte, já que foi realizado um corte dos usuários para os que pelo menos assistiram a metade de filmes de userIdA
 		// E depois foi realizado os cálculos de similaridade, buscando fazer com que os usuários mais similares fossem pegos
 		// Os filmes desses usuários foram pegados, os que A já assistiu foram removidos e depois foram descartados os filmes que apenas alguns usuários
 		// semelhantes assistiram, sobrando apenas os mais assistidos por eles
 		// Agora é só realizar mais um cálculo da predição
-		for(Integer movieId : moviesPosReduction.keySet()){
-			System.out.println("Id: " + movieId + ", Quantidade: " + moviesPosReduction.get(movieId));
-		}
+		
+//		System.out.println("Lista de Possíveis Filmes: ");
+//		for(Integer movieId : moviesPosReduction.keySet()){ // For para mostrar os filmes e suas quantidades
+//			System.out.println("Id: " + movieId + ", Quantidade: " + moviesPosReduction.get(movieId));
+//		}
 		System.out.println("----------------");
 		System.out.println("Quantidade de Filmes Possíveis: " + moviesPosReduction.size());
 		
+		return moviesPosReduction;
 	}
 
+	public void predicao(Map<Integer, Integer> moviesReduction, Map<Integer,List<Rating>> ratingsMini, List<Similarity> similarities){ //***ESTIMAR UMA NOTA QUE O USUÁRIO PODERÁ DAR***
+		
+	}
+	
 	public Map<Integer, Integer> contarMovies(Map<Integer,List<Rating>> ratingsMini){
 		Map<Integer, Integer> movies = new HashMap<>(); // Lista com os filmes dos usuários semelhantes a A
 		
