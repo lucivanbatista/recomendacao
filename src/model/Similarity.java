@@ -14,11 +14,6 @@ public class Similarity {
 	private List<Rating> ratingsA;
 	private List<Rating> ratingsB;
 	
-	//Usados apenas na hora da predição
-//	private double meanBwithoutRatingX;
-//	private double RatingX;
-	private double ratingXMinusMeanBwithoutRatingX; // Numerador da predição já com a similaridade
-	
 	//INICIO EXTRA
 	
 	private Set<Integer> union;
@@ -49,18 +44,6 @@ public class Similarity {
 		this.similarityJaccard = similarity;
 		this.distanceJaccard = distanceJaccard;
 	}
-	
-//	public Similarity(int userIdA, int userIdB, double distanceCosseno) {
-//		this.userIdA = userIdA;
-//		this.userIdB = userIdB;
-//		this.distanceCosseno = distanceCosseno;
-//	}
-//	
-//	public Similarity(int userIdA, int userIdB, double pearsonCorrelation) {
-//		this.userIdA = userIdA;
-//		this.userIdB = userIdB;
-//		this.setPearsonCorrelation(pearsonCorrelation);
-//	}
 	
 	public Similarity(double distanceCosseno) {
 		this.distanceCosseno = distanceCosseno;
@@ -129,28 +112,4 @@ public class Similarity {
 	public void setPearsonCorrelation(double pearsonCorrelation) {
 		this.pearsonCorrelation = pearsonCorrelation;
 	}
-
-	public double getRatingXMinusMeanBwithoutRatingX() {
-		return ratingXMinusMeanBwithoutRatingX;
-	}
-
-	public void setRatingXMinusMeanBwithoutRatingX(double ratingXMinusMeanBwithoutRatingX) {
-		this.ratingXMinusMeanBwithoutRatingX = ratingXMinusMeanBwithoutRatingX;
-	}
-
-//	public double getMeanBwithoutRatingX() {
-//		return meanBwithoutRatingX;
-//	}
-//
-//	public void setMeanBwithoutRatingX(double meanBwithoutRatingX) {
-//		this.meanBwithoutRatingX = meanBwithoutRatingX;
-//	}
-//
-//	public double getRatingX() {
-//		return RatingX;
-//	}
-//
-//	public void setRatingX(double ratingX) {
-//		RatingX = ratingX;
-//	}
 }

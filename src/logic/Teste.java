@@ -356,11 +356,11 @@ public class Teste {
 					}
 				}
 				mean = mean / (s.getRatingsB().size() - 1);
-				s.setRatingXMinusMeanBwithoutRatingX((ratingX - mean) * s.getPearsonCorrelation());
+				somatorioPredicao += (ratingX - mean) * s.getPearsonCorrelation();
+				somatorioSimilaridades += Math.abs(s.getPearsonCorrelation());
 				mean = 0;
 				ratingX = 0;
-				somatorioPredicao += s.getRatingXMinusMeanBwithoutRatingX();
-				somatorioSimilaridades += Math.abs(s.getPearsonCorrelation());
+				
 			}
 			System.out.println(somatorioPredicao);
 			System.out.println(somatorioSimilaridades);
