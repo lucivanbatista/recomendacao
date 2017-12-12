@@ -71,24 +71,22 @@ public class Prediction {
 	}
 	
 	public Map<Integer, Integer> reductionMovies(Map<Integer,List<Rating>> ratingsMini, List<Rating> ratingsA){ // RECOMENDAR FILMES
-//		//Até agora, eu possuo um map com as chaves sendo os usuários semelhantes e A, e todos os seus filmes e seus ratings
-		
+		//Até agora, eu possuo um map com as chaves sendo os usuários semelhantes e A, e todos os seus filmes e seus ratings
 		Map<Integer, Integer> movies = contarMovies(ratingsMini); // Contar os filmes para cálculos futuros (remover os menos assistidos)
 		
 		for(Rating r : ratingsA){ // Removendo os filmes que A já assistiu
 			movies.remove(r.getMovieId());
 		}
 		
-		Map<Integer, Integer> moviesPosReduction = new HashMap<>();
-		
-		for(Integer movieId : movies.keySet()){ // Removendo os filmes que possuem do total de usuários similares um pouco acima da metade não assistiu
-			if(movies.get(movieId) > (ratingsMini.size() / 1.5)){
-				moviesPosReduction.put(movieId, movies.get(movieId));
-			}
-		}
-		
-		movies = null;
-		
+//		Map<Integer, Integer> moviesPosReduction = new HashMap<>();
+//		
+//		// ESSE FOR POSSIVELMENTE SERÁ RETIRADO E DEIXAREMOS APENAS OS MOVIES APÓS A CONTAGEM E A ELIMINAÇÃO DOS FILMES QUE A JÁ ASSISTIU
+//		for(Integer movieId : movies.keySet()){ // Removendo os filmes que possuem do total de usuários similares um pouco acima da metade não assistiu
+//			if(movies.get(movieId) > (ratingsMini.size() / 1.5)){
+//				moviesPosReduction.put(movieId, movies.get(movieId));
+//			}
+//		}
+//		movies = null;
 		
 		// A explicação é a seguinte, já que foi realizado um corte dos usuários para os que pelo menos assistiram a metade de filmes de userIdA
 		// E depois foi realizado os cálculos de similaridade, buscando fazer com que os usuários mais similares fossem pegos
@@ -101,9 +99,9 @@ public class Prediction {
 //			System.out.println("Id: " + movieId + ", Quantidade: " + moviesPosReduction.get(movieId));
 //		}
 		System.out.println("----------------");
-		System.out.println("Quantidade de Filmes Possíveis: " + moviesPosReduction.size());
-		
-		return moviesPosReduction;
+		System.out.println("Quantidade de Filmes Possíveis: " + movies.size());
+		return movies;
+//		return moviesPosReduction;
 	}
 
 	public void predicao(Map<Integer, Integer> moviesReduction, Map<Integer,List<Rating>> ratingsMini, List<Similarity> similarities){ //***ESTIMAR UMA NOTA QUE O USUÁRIO PODERÁ DAR***

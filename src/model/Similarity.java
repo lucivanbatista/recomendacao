@@ -14,6 +14,11 @@ public class Similarity {
 	private List<Rating> ratingsA;
 	private List<Rating> ratingsB;
 	
+	//Usados apenas na hora da predição
+//	private double meanBwithoutRatingX;
+//	private double RatingX;
+	private double ratingXMinusMeanBwithoutRatingX; // Numerador da predição já com a similaridade
+	
 	//INICIO EXTRA
 	
 	private Set<Integer> union;
@@ -124,4 +129,28 @@ public class Similarity {
 	public void setPearsonCorrelation(double pearsonCorrelation) {
 		this.pearsonCorrelation = pearsonCorrelation;
 	}
+
+	public double getRatingXMinusMeanBwithoutRatingX() {
+		return ratingXMinusMeanBwithoutRatingX;
+	}
+
+	public void setRatingXMinusMeanBwithoutRatingX(double ratingXMinusMeanBwithoutRatingX) {
+		this.ratingXMinusMeanBwithoutRatingX = ratingXMinusMeanBwithoutRatingX;
+	}
+
+//	public double getMeanBwithoutRatingX() {
+//		return meanBwithoutRatingX;
+//	}
+//
+//	public void setMeanBwithoutRatingX(double meanBwithoutRatingX) {
+//		this.meanBwithoutRatingX = meanBwithoutRatingX;
+//	}
+//
+//	public double getRatingX() {
+//		return RatingX;
+//	}
+//
+//	public void setRatingX(double ratingX) {
+//		RatingX = ratingX;
+//	}
 }

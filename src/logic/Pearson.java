@@ -42,14 +42,22 @@ public class Pearson {
 		//double count2 = 0; //sqrt(somatório (rating A no item i - média ratings A)^2) * somatório((rating B no item i - média ratings B)^2)
 		
 		for(Integer movie : intersection){
-			Rating a = this.ratingsA.get(movie);
-			Rating b = this.ratingsB.get(movie);
+			double a = this.ratingsA.get(movie).getRating();
+			double b = this.ratingsB.get(movie).getRating();
+//			System.out.println("Para o movie nº " + movie + ", Rating A: " + ratingsA.get(movie).getRating() + ", Rating B: " + ratingsB.get(movie).getRating());
 			
-			count += (a.getRating() - meanA) *  (b.getRating() - meanB);
-			countPowA += Math.pow((a.getRating() - meanA), 2);
-			countPowB += Math.pow((b.getRating() - meanB), 2);
+			count += (a - meanA) *  (b - meanB);
+			countPowA += Math.pow((a - meanA), 2);
+			countPowB += Math.pow((b - meanB), 2);
 		}
 		
+		if((count > -0.000001 && count <= 0.000001) || ((countPowA * countPowB) > -0.000001) && ((countPowA * countPowB) <= 0.000001)){
+			return 0.0;
+		}
+		
+//		System.out.println("Count: " + count + "; PowA: " + countPowA + "; PowB: " + countPowB);
+//		System.out.println((Math.sqrt(countPowA * countPowB)));
+//		System.out.println(count / (Math.sqrt(countPowA * countPowB)));
 		return (count / (Math.sqrt(countPowA * countPowB)));		
 	}
 
@@ -71,4 +79,5 @@ public class Pearson {
 		mean = mean / ratings.keySet().size();
 		return mean;
 	}
+	
 }
