@@ -28,8 +28,8 @@ public class Pearson {
 		preProcessamentoPearson(s);
 		
 		double meanA = getMediaRatings(this.ratingsA); // média ratings A
-		double meanB = getMediaRatings(this.ratingsB); // média ratings B
-		
+		double meanB = getMediaRatingsB(this.ratingsB, intersection); // média ratings B
+
 		s.setPearsonCorrelation(functionPearson(intersection, meanA, meanB));
 		return s;
 	}
@@ -51,7 +51,7 @@ public class Pearson {
 			countPowB += Math.pow((b - meanB), 2);
 		}
 		
-		if((count > -0.000001 && count <= 0.000001) || ((countPowA * countPowB) > -0.000001) && ((countPowA * countPowB) <= 0.000001)){
+		if((count > -0.00000001 && count <= 0.00000001) || ((countPowA * countPowB) > -0.00000001) && ((countPowA * countPowB) <= 0.00000001)){
 			return 0.0;
 		}
 		
@@ -77,6 +77,15 @@ public class Pearson {
 			mean += r.getRating();
 		}
 		mean = mean / ratings.keySet().size();
+		return mean;
+	}
+	
+	public double getMediaRatingsB(Map<Integer, Rating> ratings, Set<Integer> intersection){ // Ele é diferente, pois o cálculo é baseado nos que eles possuem iguais
+		double mean = 0;
+		for(Integer movie : intersection){
+			mean += ratings.get(movie).getRating();
+		}
+		mean = mean / intersection.size();
 		return mean;
 	}
 	

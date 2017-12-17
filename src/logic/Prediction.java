@@ -7,28 +7,39 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import dao.MovieDAO;
 import dao.RatingDAO;
+import model.Movie;
 import model.Rating;
 import model.Similarity;
 
 public class Prediction {
 
-	Recomendar recomendacao;
-	RatingDAO ratingdao;
+	private Recomendar recomendacao;
+	private RatingDAO ratingdao;
+	private MovieDAO moviedao;
+	private String fileName;
+	private int divisor;
 
-	public Prediction() {
+	public Prediction(String fileName) {
 		recomendacao = new Recomendar();
 		ratingdao = new RatingDAO();
+		moviedao = new MovieDAO();
+		this.fileName = fileName;
+		this.divisor = 2;
 	}
 
-	public void iniciarPredicao(int userIdA, String fileName){ // userId que eu quero fazer a predição
+	public void iniciarPredicao(int userIdA){ // userId que eu quero fazer a predição
 		//1. Reduzir a consulta
 		List<Rating> ratings = preProcessamentoOtimizacao(userIdA);
 
 		//Esse map estará com todos os ids dos usuários da tabela de otimizacao
 		Map<Integer, List<Rating>> ratingsAll = this.ratingdao.getQtdUsersReduction();
 		ratingsAll =  processamentoOtimizacao(ratings, ratingsAll);
-
+		
+		ratings = null;
+		System.gc();
+		
 		System.out.println("Quantidade de usuários possíveis similares: " + ratingsAll.size());
 
 		//2. Pegar os ratings de A
@@ -36,7 +47,7 @@ public class Prediction {
 		
 		//3. Para cada usuário irei analisar a similaridade com o userIdA
 		Map<Integer, Similarity> similarities = new HashMap<>(); // Id do usuário semelhante ao A e Similarity
-
+		
 		Set<Integer> allUsers = ratingsAll.keySet(); //Todos os usuários
 		allUsers.remove(userIdA);
 		
@@ -59,25 +70,40 @@ public class Prediction {
 		System.out.println("Finalizado os cálculos de similaridade!");
 		
 		ratingsAll = null; // Garbage Collection irá funcionar
-		ratings = null;
 		System.gc();
 		
-		// Exportar e excluir tabela de otimização
-		exportSimilaritiesCSV(fileName, similarities.values());
 		this.ratingdao.deleteTableReduction();
 		System.out.println("Quantidade de usuários similares: " + similarities.keySet().size());
 		
-		Map<Integer, Integer> moviesReduction = reductionMovies(ratingsMini, ratingsA); // Filmes que A não possui
-		Map<Integer, Double> predicoes = predicao(moviesReduction, ratingsMini, similarities, ratingsA);
+		// ideia fazer, tipo um loop, caso ele não tenha usuário similares, então eu faço novamente o mesmo processo e coloco o código abaixo em uma função
+		// colocar para pegar o /3 e depois /4 lá no ratingdao isso deopis da deleção das tabelas
+		if(similarities.keySet().size() < 5){
+			ratingsMini = null;
+			ratingsA = null;
+			similarities = null;
+			allUsers = null;
+			ratings = null;
+			System.gc();
+			this.divisor++;
+			System.out.println("Não foi possível encontrar usuários similares o suficiente, iremos aumentar a procura...");
+			iniciarPredicao(userIdA);
+		}else{
+			finalPredicao(ratingsMini, ratingsA, similarities);
+		}		
+	}
+	
+	public void finalPredicao(Map<Integer, List<Rating>> ratingsMini, List<Rating> ratingsA, Map<Integer, Similarity> similarities){
+		Map<Integer, Integer> moviesReduction = reductionMovies(ratingsMini, ratingsA); // Filmes que A não possui; (Id movies, Qtd)
 		
-		exportPredictionsCSV(fileName, predicoes);
+		System.out.println("Iniciando Predição 1");
+		Map<Integer, Double> predicoes1 = predicao1(moviesReduction, similarities, ratingsA);
 		
-		for(Integer movie : moviesReduction.keySet()){
-			System.out.println("Id: " + movie + "; Qtd: " + moviesReduction.get(movie));
-		}
-//		for(Integer movie : predicoes.keySet()){
-//			System.out.println("Id do Movie: " + predicoes.get(movie));
-//		}
+		System.out.println("Iniciando Predição 2");
+		Map<Integer, Double> predicoes2 = predicao2(moviesReduction, similarities, ratingsA);
+		
+		exportSimilaritiesCSV(this.fileName, similarities.values());
+		exportPredictionsCSV(this.fileName, predicoes1, predicoes2);
+		exportNamesTitleCSV(this.fileName, ratingsA);
 	}
 	
 	public Map<Integer, Integer> reductionMovies(Map<Integer,List<Rating>> ratingsMini, List<Rating> ratingsA){ // RECOMENDAR FILMES
@@ -88,17 +114,16 @@ public class Prediction {
 			movies.remove(r.getMovieId());
 		}
 		
-		System.out.println("Quantidade de Filmes Possíveis PRÉ REDUÇÃO: " + movies.size());
-		
-		Map<Integer, Integer> moviesPosReduction = new HashMap<>();
-		
-		// ESSE FOR POSSIVELMENTE SERÁ RETIRADO E DEIXAREMOS APENAS OS MOVIES APÓS A CONTAGEM E A ELIMINAÇÃO DOS FILMES QUE A JÁ ASSISTIU
-		for(Integer movieId : movies.keySet()){ // Removendo os filmes que possuem do total de usuários similares a metade não assistiu
-			if(movies.get(movieId) > (ratingsMini.size() / 2)){
-				moviesPosReduction.put(movieId, movies.get(movieId));
-			}
-		}
-		movies = null;
+//		System.out.println("Quantidade de Filmes Possíveis PRÉ REDUÇÃO: " + movies.size());
+//		Map<Integer, Integer> moviesPosReduction = new HashMap<>();
+//		
+//		// ESSE FOR POSSIVELMENTE SERÁ RETIRADO E DEIXAREMOS APENAS OS MOVIES APÓS A CONTAGEM E A ELIMINAÇÃO DOS FILMES QUE A JÁ ASSISTIU
+//		for(Integer movieId : movies.keySet()){ // Removendo os filmes que possuem do total de usuários similares a metade não assistiu
+//			if(movies.get(movieId) > (ratingsMini.size() / 2)){
+//				moviesPosReduction.put(movieId, movies.get(movieId));
+//			}
+//		}
+//		movies = null;
 		
 		// A explicação é a seguinte, já que foi realizado um corte dos usuários para os que pelo menos assistiram a metade de filmes de userIdA
 		// E depois foi realizado os cálculos de similaridade, buscando fazer com que os usuários mais similares fossem pegos
@@ -107,12 +132,12 @@ public class Prediction {
 		// Agora é só realizar mais um cálculo da predição
 		
 		System.out.println("----------------");
-		System.out.println("Quantidade de Filmes Possíveis PÓS REDUÇÃO: " + moviesPosReduction.size());
-		return moviesPosReduction;
+		System.out.println("Quantidade de Filmes Possíveis PÓS REDUÇÃO: " + movies.size());
+		return movies;
 	}
 
 	//***ESTIMAR UMA NOTA QUE O USUÁRIO PODERÁ DAR***
-	public Map<Integer, Double> predicao(Map<Integer, Integer> moviesReduction, Map<Integer,List<Rating>> ratingsMini, Map<Integer, Similarity> similarities, List<Rating> ratingsA){
+	public Map<Integer, Double> predicao2(Map<Integer, Integer> moviesReduction, Map<Integer, Similarity> similarities, List<Rating> ratingsA){
 		double mean = 0; // Essa é a média de cada user sem o determinado filme que está sendo analisado, vai mudando durante a iteração
 		double ratingX = 0; // Nessa predição é necessário a média e a nota do determinado filme, que nesse caso será o ratingX e ficará mudando durante a iteração
 		double somatorioPredicao = 0; // Esse somatório é o numerador da fórmula da predição: (ratingX - mean) * similaridade
@@ -150,6 +175,35 @@ public class Prediction {
 			}
 			predicao = meanA + (somatorioPredicao / somatorioSimilaridades);
 			predicoes.put(movie, predicao);
+			somatorioPredicao = 0;
+			somatorioSimilaridades = 0;
+			predicao = 0;
+		}
+		return predicoes;
+	}
+	
+	public Map<Integer, Double> predicao1(Map<Integer, Integer> moviesReduction, Map<Integer, Similarity> similarities, List<Rating> ratingsA){
+		// Para cada usuário, vou pegar o somatório das notas dos itens que os usuários deram para ele e dividir pelo modulo da similaridade do userA com ele
+		// Ou seja, pego todos os itens, depois para o usuário B, pego a nota e divido pela similaridade e no final desse item mostro a predicao dele
+		// Isso é tipo uma média
+		double somatorioPredicao = 0; // Esse é o somatório das notas que B deu para um determinado item
+		int cont = 0;
+		double predicao = 0; // resultado final
+		Map<Integer, Double> predicoes = new HashMap<>(); // Key (Id do filme) e Values (Predições da nota desse filme)
+		
+		for(Integer movie : moviesReduction.keySet()){ // Todos os filmes classificados como possíveis filmes de A
+			for(Similarity s : similarities.values()){ // para cada similaridade (usuário) vou pegar o determinado filme e sua nota
+				for(Rating rating : s.getRatingsB()){ // irei colocar no somatorio e no final dividir por qtd similares para pegar a predicao
+					if(rating.getMovieId() == movie){ // esse é a nota do determinado filme
+						somatorioPredicao += rating.getRating();
+						cont++; // para pegar o qtd similares que possuem esse item
+					}					
+				}
+			}
+			predicao = somatorioPredicao / cont;
+			predicoes.put(movie, predicao);
+			cont = 0;
+			somatorioPredicao = 0;
 		}
 		return predicoes;
 	}
@@ -175,7 +229,7 @@ public class Prediction {
 		System.out.println("Organizando o banco... criando tabela para otimização");
 		this.ratingdao.createTableReduction();
 		System.out.println("Inserindo elementos na tabela para otimização...");
-		this.ratingdao.insertTableReduction(userId);
+		this.ratingdao.insertTableReduction(userId, this.divisor);
 		System.out.println("Recebendo ratings...");
 		List<Rating> ratings = this.ratingdao.selectTableReduction(userId);
 		return ratings;
@@ -198,10 +252,10 @@ public class Prediction {
 	public void exportSimilaritiesCSV(String fileName, Collection<Similarity> list){
 		try{
 			PrintWriter writer = new PrintWriter(fileName+"_similarities", "UTF-8");
-			writer.println("userIdA;userIdB;union;intersection;similarity;distanceJ;distanceCos;pearsonCorrelation");
+			writer.println("userIdA;userIdB;intersection;similarity;distanceJ;distanceCos;pearsonCorrelation");
 			System.out.println("Exportando Arquivo de Similaridades...");
 			for (Similarity s : list) {
-				writer.println(s.getUserIdA()+";"+s.getUserIdB()+";"+s.getUnion()+";"+s.getIntersection()+";"+s.getSimilarity()+";"+s.getDistanceJaccard()+";"+s.getDistanceCosseno()+";"+s.getPearsonCorrelation());
+				writer.println(s.getUserIdA()+";"+s.getUserIdB()+";"+s.getIntersection()+";"+s.getSimilarity()+";"+s.getDistanceJaccard()+";"+s.getDistanceCosseno()+";"+s.getPearsonCorrelation());
 			}
 			System.out.println("Arquivo de Similaridades Exportado com sucesso!");
 
@@ -211,15 +265,33 @@ public class Prediction {
 		}
 	}
 	
-	public void exportPredictionsCSV(String fileName, Map<Integer, Double> list){
+	public void exportPredictionsCSV(String fileName, Map<Integer, Double> p1,  Map<Integer, Double> p2){
+		Map<Integer, Movie> movies = moviedao.selectAllMovies();
 		try{
 			PrintWriter writer = new PrintWriter(fileName+"_predictions", "UTF-8");
-			writer.println("movieid;predicao;rating");
+			writer.println("movieid;predicaoMedia;predicao2;rating;movieTitle");
 			System.out.println("Exportando Arquivo de Predições...");
-			for (Integer movie : list.keySet()) {
-				writer.println(movie+";"+list.get(movie)+";"+(list.get(movie)*5));
+			for (Integer movie : p1.keySet()) {
+				writer.println(movie+";"+p1.get(movie)+";"+(p1.get(movie)*5+";"+(p2.get(movie))+";"+movies.get(movie).getTitle()));
 			}
 			System.out.println("Arquivo de Predições Exportado com sucesso!");
+
+			writer.close();
+		}catch (Exception e) {
+			System.out.println("[ERROR]: "+e.toString());
+		}
+	}
+	
+	public void exportNamesTitleCSV(String fileName, List<Rating> list){
+		Map<Integer, Movie> movies = moviedao.selectAllMovies();
+		try{
+			PrintWriter writer = new PrintWriter(fileName+"_movies", "UTF-8");
+			writer.println("movieid;movieTitle");
+			System.out.println("Exportando Arquivo de Filmes de A...");
+			for (Rating r : list) {
+				writer.println(r.getMovieId()+";"+movies.get(r.getMovieId()).getTitle());
+			}
+			System.out.println("Arquivo de Filmes de A Exportado com sucesso!");
 
 			writer.close();
 		}catch (Exception e) {

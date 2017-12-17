@@ -3,8 +3,8 @@ package dao;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 import factory.ConnectionFactory;
 import model.Movie;
@@ -17,17 +17,19 @@ public class MovieDAO {
 		this.connection = new ConnectionFactory().getConnection();
 	}
 	
-	public List<Movie> selectAllMovies(){
+	public Map<Integer, Movie> selectAllMovies(){
 		String sql = "SELECT * FROM movies";
 		
 		try {
-			ArrayList<Movie> movies = new ArrayList<>();
+//			ArrayList<Movie> movies = new ArrayList<>();
+			Map<Integer, Movie> movies = new HashMap<>();
 			PreparedStatement st = connection.prepareStatement(sql);
 			ResultSet rs = st.executeQuery();
 			
 			while(rs.next()){
 				Movie m = new Movie(rs.getInt("movieid"), rs.getString("title"));
-				movies.add(m);
+//				movies.add(m);
+				movies.put(m.getMovieId(), m);
 			}
 			
 			rs.close();
@@ -60,4 +62,5 @@ public class MovieDAO {
 		}
 		return 0;
 	}
+
 }

@@ -29,8 +29,8 @@ public class Recomendar {
 	
 	public Similarity recomendarUsingAll(Similarity s){
 		this.s = s;
-		recomendarUsingJaccard();
-		recomendarUsingCosseno();
+//		recomendarUsingJaccard();
+//		recomendarUsingCosseno();
 		recomendarUsingPearson();
 		return this.s;
 	}

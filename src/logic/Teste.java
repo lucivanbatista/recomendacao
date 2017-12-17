@@ -17,8 +17,8 @@ public class Teste {
 	
 	public static void Teste1(){ // Mostrando todos os filmes
 		MovieDAO moviedao = new MovieDAO();
-		List<Movie> movies = moviedao.selectAllMovies();
-		for(Movie m : movies){
+		Map<Integer, Movie> movies = moviedao.selectAllMovies();
+		for(Movie m : movies.values()){
 			System.out.println("MovieId: " + m.getMovieId() + "; Title: " + m.getTitle());
 		}
 		System.out.println(movies.size());
@@ -28,7 +28,7 @@ public class Teste {
 		RatingDAO ratingdao = new RatingDAO();
 		List<Rating> ratings = ratingdao.selectAllRatingByRating(1);
 		for(Rating r : ratings){
-			System.out.println("Id: " + r.getId() + "; UserId: " + r.getUserId() + "; MovieId: " + r.getMovieId() + "; Rating: " + r.getRating());
+			System.out.println("UserId: " + r.getUserId() + "; MovieId: " + r.getMovieId() + "; Rating: " + r.getRating());
 		}
 		System.out.println(ratings.size());
 	}
@@ -42,14 +42,14 @@ public class Teste {
 	}
 	
 	public static void Teste4(){ // Jaccard e Cosseno Testes
-		Rating a = new Rating(1, 1, 1, 4);
-		Rating b = new Rating(2, 1, 2, 1);
-		Rating c = new Rating(3, 1, 4, 5);
-		Rating d = new Rating(4, 1, 5, 4.5);
+		Rating a = new Rating(1, 1, 4);
+		Rating b = new Rating(1, 2, 1);
+		Rating c = new Rating(1, 4, 5);
+		Rating d = new Rating(1, 5, 4.5);
 		
-		Rating e = new Rating(5, 2, 1, 2);
-		Rating f = new Rating(6, 2, 3, 3);
-		Rating g = new Rating(7, 2, 4, 5);
+		Rating e = new Rating(2, 1, 2);
+		Rating f = new Rating(2, 3, 3);
+		Rating g = new Rating(2, 4, 5);
 		
 		List<Rating> ratingsA = new ArrayList<>();
 		List<Rating> ratingsB = new ArrayList<>();
@@ -63,7 +63,6 @@ public class Teste {
 		ratingsB.add(g);
 		
 		Jaccard j = new Jaccard();
-		OperacoesConjunto opConjunto = new OperacoesConjunto();
 		Set<Integer> uniao = j.opConjunto.union(ratingsA, ratingsB);
 		Set<Integer> interseccao = j.opConjunto.intersection(ratingsA, ratingsB);
 		
@@ -132,12 +131,12 @@ public class Teste {
 	public static void Teste7(){ // Pearson teste
 		int idA = 1;
 		int idB = 2;
-		Rating a = new Rating(1, idA, 1, 4);
-		Rating b = new Rating(2, idA, 2, 3);
-		Rating c = new Rating(3, idA, 3, 5);
+		Rating a = new Rating(idA, 1, 4);
+		Rating b = new Rating(idA, 2, 3);
+		Rating c = new Rating(idA, 3, 5);
 		
-		Rating d = new Rating(4, idB, 1, 4.5);
-		Rating e = new Rating(5, idB, 2, 3.5);
+		Rating d = new Rating(idB, 1, 4.5);
+		Rating e = new Rating(idB, 2, 3.5);
 		
 		List<Rating> ratingsA = new ArrayList<>();
 		List<Rating> ratingsB = new ArrayList<>();
@@ -162,15 +161,14 @@ public class Teste {
 		System.out.println("Pearson = " + s.getPearsonCorrelation());
 		
 		
-		Prediction p = new Prediction();
 		Map<Integer, List<Rating>> ratingsMini = new HashMap<>();
 		ratingsMini.put(idA, ratingsA);
 		ratingsMini.put(idB, ratingsB);
 	}
 
 	public static void Teste8(){
-		Prediction p = new Prediction();
-		p.iniciarPredicao(1, "user1");
+		Prediction p = new Prediction("user1");
+		p.iniciarPredicao(1);
 	}
 	
 	public static void Teste7MomentoNoiteDoida(){
@@ -216,32 +214,32 @@ public class Teste {
 		int id4 = 4;
 		int id5 = 5;
 		
-		Rating a1 = new Rating(1, id1, 1, 3);
-		Rating c1 = new Rating(2, id1, 3, 4);
-		Rating d1 = new Rating(3, id1, 4, 3);
-		Rating e1 = new Rating(4, id1, 5, 2);
+		Rating a1 = new Rating(id1, 1, 3);
+		Rating c1 = new Rating(id1, 3, 4);
+		Rating d1 = new Rating(id1, 4, 3);
+		Rating e1 = new Rating(id1, 5, 2);
 		
-		Rating a2 = new Rating(5, id2, 1, 4);
-		Rating b2 = new Rating(6, id2, 2, 5);
-		Rating c2 = new Rating(7, id2, 3, 4);
-		Rating d2 = new Rating(8, id2, 4, 4);
-		Rating e2 = new Rating(9, id2, 5, 2);
+		Rating a2 = new Rating(id2, 1, 4);
+		Rating b2 = new Rating(id2, 2, 5);
+		Rating c2 = new Rating(id2, 3, 4);
+		Rating d2 = new Rating(id2, 4, 4);
+		Rating e2 = new Rating(id2, 5, 2);
 		
-		Rating a3 = new Rating(10, id3, 1, 5);
-		Rating b3 = new Rating(11, id3, 2, 1);
-		Rating c3 = new Rating(12, id3, 3, 1);
-		Rating d3 = new Rating(13, id3, 4, 5);
-		Rating e3 = new Rating(14, id3, 5, 4);
+		Rating a3 = new Rating(id3, 1, 5);
+		Rating b3 = new Rating(id3, 2, 1);
+		Rating c3 = new Rating(id3, 3, 1);
+		Rating d3 = new Rating(id3, 4, 5);
+		Rating e3 = new Rating(id3, 5, 4);
 		
-		Rating a4 = new Rating(15, id4, 1, 4);
-		Rating b4 = new Rating(16, id4, 2, 5);
-		Rating c4 = new Rating(17, id4, 3, 3);
-		Rating d4 = new Rating(18, id4, 4, 3);
-		Rating e4 = new Rating(19, id4, 5, 3);
+		Rating a4 = new Rating(id4, 1, 4);
+		Rating b4 = new Rating(id4, 2, 5);
+		Rating c4 = new Rating(id4, 3, 3);
+		Rating d4 = new Rating(id4, 4, 3);
+		Rating e4 = new Rating(id4, 5, 3);
 		
-		Rating a5 = new Rating(20, id5, 1, 1);
-		Rating b5 = new Rating(21, id5, 2, 3);
-		Rating d5 = new Rating(22, id5, 4, 2);
+		Rating a5 = new Rating(id5, 1, 1);
+		Rating b5 = new Rating(id5, 2, 3);
+		Rating d5 = new Rating(id5, 4, 2);
 		
 		List<Rating> ratings1 = new ArrayList<>();
 		List<Rating> ratings2 = new ArrayList<>();
@@ -297,7 +295,7 @@ public class Teste {
 //		System.out.println("Pearson14 = " + s14.getPearsonCorrelation());
 //		System.out.println("Pearson15 = " + s15.getPearsonCorrelation());
 		
-		Prediction p = new Prediction();
+		Prediction p = new Prediction("userTeste");
 
 		Map<Integer, Similarity> similarities = new HashMap<>();
 		
@@ -326,10 +324,6 @@ public class Teste {
 				similarities.put(userIdB, s); // Calcular as similaridades
 				ratingsMini.put(userIdB, ratingsB); // Usado para predição
 			}
-		}
-		
-		for(Similarity s : similarities.values()){
-			System.out.println(s.getPearsonCorrelation());
 		}
 		
 		Map<Integer, Integer> moviesReduction = p.reductionMovies(ratingsMini, ratings1); // Filmes que A não possui
@@ -369,11 +363,236 @@ public class Teste {
 		}
 		
 		
-//		for(Integer i : moviesReduction.keySet()){
-//			System.out.println(i + ": " + moviesReduction.get(i));
-//		}
+	}
+	
+	public static void Teste10(){ // Testando Prediçao com 6 pessoas FINAL
+		int id1 = 1; // Esse será o que iremos prever
+		int id2 = 2;
+		int id3 = 3;
+		int id4 = 4;
+		int id5 = 5;
+		int id6 = 6;
 		
+		Rating a1 = new Rating(id1, 1, 3);
+		Rating c1 = new Rating(id1, 3, 4);
+		Rating d1 = new Rating(id1, 4, 3);
+		Rating e1 = new Rating(id1, 5, 2);
 		
+		Rating a2 = new Rating(id2, 1, 4);
+		Rating b2 = new Rating(id2, 2, 5);
+		Rating c2 = new Rating(id2, 3, 4);
+		Rating d2 = new Rating(id2, 4, 4);
+		Rating e2 = new Rating(id2, 5, 2);
+		
+		Rating a3 = new Rating(id3, 1, 5);
+		Rating b3 = new Rating(id3, 2, 1);
+		Rating c3 = new Rating(id3, 3, 1);
+		Rating d3 = new Rating(id3, 4, 5);
+		Rating e3 = new Rating(id3, 5, 4);
+		
+		Rating a4 = new Rating(id4, 1, 4);
+		Rating b4 = new Rating(id4, 2, 5);
+		Rating c4 = new Rating(id4, 3, 3);
+		Rating d4 = new Rating(id4, 4, 3);
+		Rating e4 = new Rating(id4, 5, 3);
+		
+		Rating a5 = new Rating(id5, 1, 1);
+		Rating b5 = new Rating(id5, 2, 3);
+		Rating d5 = new Rating(id5, 4, 2);
+		
+		Rating a6 = new Rating(id6, 1, 4);
+		Rating b6 = new Rating(id6, 2, 1);
+		Rating c6 = new Rating(id6, 3, 5);
+		Rating d6 = new Rating(id6, 4, 4);
+		Rating e6 = new Rating(id6, 5, 3);
+		
+		List<Rating> ratings1 = new ArrayList<>();
+		List<Rating> ratings2 = new ArrayList<>();
+		List<Rating> ratings3 = new ArrayList<>();
+		List<Rating> ratings4 = new ArrayList<>();
+		List<Rating> ratings5 = new ArrayList<>();
+		List<Rating> ratings6 = new ArrayList<>();
+		
+		ratings1.add(a1);
+		ratings1.add(c1);
+		ratings1.add(d1);
+		ratings1.add(e1);
+		
+		ratings2.add(a2);
+		ratings2.add(b2);
+		ratings2.add(c2);
+		ratings2.add(d2);
+		ratings2.add(e2);
+		
+		ratings3.add(a3);
+		ratings3.add(b3);
+		ratings3.add(c3);
+		ratings3.add(d3);
+		ratings3.add(e3);
+		
+		ratings4.add(a4);
+		ratings4.add(b4);
+		ratings4.add(c4);
+		ratings4.add(d4);
+		ratings4.add(e4);
+		
+		ratings5.add(a5);
+		ratings5.add(b5);
+		ratings5.add(d5);
+		
+		ratings6.add(a6);
+		ratings6.add(b6);
+		ratings6.add(c6);
+		ratings6.add(d6);
+		ratings6.add(e6);
+		
+		Recomendar r = new Recomendar();
+
+		Prediction p = new Prediction("userTeste");
+
+		Map<Integer, Similarity> similarities = new HashMap<>();
+		
+		Map<Integer, List<Rating>> ratingsAll = new HashMap<>();
+		
+		ratingsAll.put(1, ratings1);
+		ratingsAll.put(2, ratings2);
+		ratingsAll.put(3, ratings3);
+		ratingsAll.put(4, ratings4);
+		ratingsAll.put(5, ratings5);
+		ratingsAll.put(6, ratings6);
+		
+		Set<Integer> allUsers = ratingsAll.keySet(); //Todos os usuários
+		allUsers.remove(id1);
+		
+		Map<Integer, List<Rating>> ratingsMini = new HashMap<>();
+		
+		System.out.println("Iniciando cálculos de similaridade...");
+		for(Integer userIdB : allUsers){
+			List<Rating> ratingsB = ratingsAll.get(userIdB);
+
+			Similarity s = new Similarity(id1, userIdB, ratings1, ratingsB);
+
+			s = r.recomendarUsingAll(s);
+
+			if(s.getPearsonCorrelation() >= 0.5 || s.getPearsonCorrelation() <= -0.5){
+				similarities.put(userIdB, s); // Calcular as similaridades
+				ratingsMini.put(userIdB, ratingsB); // Usado para predição
+			}
+		}
+		System.out.println("Finalizado os cálculos de similaridade!");
+		System.out.println("Quantidade de usuários similares: " + similarities.keySet().size());
+		for(Similarity s : similarities.values()){
+			System.out.println("User: " + s.getUserIdB() + "; Similaridade: " + s.getPearsonCorrelation());
+		}
+		p.finalPredicao(ratingsMini, ratings1, similarities);
+		
+	}
+	
+	public static void Teste11(){ // Testando Predicao com 5 pessoas FINAL
+		int id1 = 1; // Esse será o que iremos prever
+		int id2 = 2;
+		int id3 = 3;
+		int id4 = 4;
+		int id5 = 5;
+		
+		Rating a1 = new Rating(id1, 1, 3);
+		Rating c1 = new Rating(id1, 3, 4);
+		Rating d1 = new Rating(id1, 4, 3);
+		Rating e1 = new Rating(id1, 5, 2);
+		
+		Rating a2 = new Rating(id2, 1, 4);
+		Rating b2 = new Rating(id2, 2, 5);
+		Rating c2 = new Rating(id2, 3, 4);
+		Rating d2 = new Rating(id2, 4, 4);
+		Rating e2 = new Rating(id2, 5, 2);
+		
+		Rating a3 = new Rating(id3, 1, 5);
+		Rating b3 = new Rating(id3, 2, 1);
+		Rating c3 = new Rating(id3, 3, 1);
+		Rating d3 = new Rating(id3, 4, 5);
+		Rating e3 = new Rating(id3, 5, 4);
+		
+		Rating a4 = new Rating(id4, 1, 4);
+		Rating b4 = new Rating(id4, 2, 5);
+		Rating c4 = new Rating(id4, 3, 3);
+		Rating d4 = new Rating(id4, 4, 3);
+		Rating e4 = new Rating(id4, 5, 3);
+		
+		Rating a5 = new Rating(id5, 1, 1);
+		Rating b5 = new Rating(id5, 2, 3);
+		Rating d5 = new Rating(id5, 4, 2);
+		
+		List<Rating> ratings1 = new ArrayList<>();
+		List<Rating> ratings2 = new ArrayList<>();
+		List<Rating> ratings3 = new ArrayList<>();
+		List<Rating> ratings4 = new ArrayList<>();
+		List<Rating> ratings5 = new ArrayList<>();
+		
+		ratings1.add(a1);
+		ratings1.add(c1);
+		ratings1.add(d1);
+		ratings1.add(e1);
+		
+		ratings2.add(a2);
+		ratings2.add(b2);
+		ratings2.add(c2);
+		ratings2.add(d2);
+		ratings2.add(e2);
+		
+		ratings3.add(a3);
+		ratings3.add(b3);
+		ratings3.add(c3);
+		ratings3.add(d3);
+		ratings3.add(e3);
+		
+		ratings4.add(a4);
+		ratings4.add(b4);
+		ratings4.add(c4);
+		ratings4.add(d4);
+		ratings4.add(e4);
+		
+		ratings5.add(a5);
+		ratings5.add(b5);
+		ratings5.add(d5);
+		
+		Recomendar r = new Recomendar();
+
+		Prediction p = new Prediction("userTeste");
+
+		Map<Integer, Similarity> similarities = new HashMap<>();
+		
+		Map<Integer, List<Rating>> ratingsAll = new HashMap<>();
+		
+		ratingsAll.put(1, ratings1);
+		ratingsAll.put(2, ratings2);
+		ratingsAll.put(3, ratings3);
+		ratingsAll.put(4, ratings4);
+		ratingsAll.put(5, ratings5);
+		
+		Set<Integer> allUsers = ratingsAll.keySet(); //Todos os usuários
+		allUsers.remove(id1);
+		
+		Map<Integer, List<Rating>> ratingsMini = new HashMap<>();
+		
+		System.out.println("Iniciando cálculos de similaridade...");
+		for(Integer userIdB : allUsers){
+			List<Rating> ratingsB = ratingsAll.get(userIdB);
+
+			Similarity s = new Similarity(id1, userIdB, ratings1, ratingsB);
+
+			s = r.recomendarUsingAll(s);
+
+			if(s.getPearsonCorrelation() >= 0.5 || s.getPearsonCorrelation() <= -0.5){
+				similarities.put(userIdB, s); // Calcular as similaridades
+				ratingsMini.put(userIdB, ratingsB); // Usado para predição
+			}
+		}
+		System.out.println("Finalizado os cálculos de similaridade!");
+		System.out.println("Quantidade de usuários similares: " + similarities.keySet().size());
+		for(Similarity s : similarities.values()){
+			System.out.println("User: " + s.getUserIdB() + "; Similaridade: " + s.getPearsonCorrelation());
+		}
+		p.finalPredicao(ratingsMini, ratings1, similarities);
 		
 	}
 	
@@ -394,7 +613,7 @@ public class Teste {
 	}
 		
 	public static void main(String[] args) {
-		Teste9();
+		Teste11();
 	}
 
 }

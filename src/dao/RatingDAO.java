@@ -27,7 +27,7 @@ public class RatingDAO {
 			ResultSet rs = st.executeQuery();
 			System.out.println("OK");
 			while(rs.next()){
-				Rating r = new Rating(rs.getInt("id"), rs.getInt("userid"), rs.getInt("movieid"), rs.getDouble("rating"));
+				Rating r = new Rating(rs.getInt("userid"), rs.getInt("movieid"), rs.getDouble("rating"));
 				ratings.add(r);
 			}
 			
@@ -50,7 +50,7 @@ public class RatingDAO {
 			ResultSet rs = st.executeQuery();
 			
 			while(rs.next()){
-				Rating r = new Rating(rs.getInt("id"), rs.getInt("userid"), rs.getInt("movieid"), rs.getDouble("rating"));
+				Rating r = new Rating(rs.getInt("userid"), rs.getInt("movieid"), rs.getDouble("rating"));
 				ratings.add(r);
 			}
 			
@@ -73,7 +73,7 @@ public class RatingDAO {
 			ResultSet rs = st.executeQuery();
 			
 			while(rs.next()){
-				Rating r = new Rating(rs.getInt("id"), rs.getInt("userid"), rs.getInt("movieid"), rs.getDouble("rating"));
+				Rating r = new Rating(rs.getInt("userid"), rs.getInt("movieid"), rs.getDouble("rating"));
 				ratings.add(r);
 			}
 			
@@ -96,7 +96,7 @@ public class RatingDAO {
 			ResultSet rs = st.executeQuery();
 			
 			while(rs.next()){
-				Rating r = new Rating(rs.getInt("id"), rs.getInt("userid"), rs.getInt("movieid"), rs.getDouble("rating"));
+				Rating r = new Rating(rs.getInt("userid"), rs.getInt("movieid"), rs.getDouble("rating"));
 				ratings.add(r);
 			}
 			
@@ -132,7 +132,7 @@ public class RatingDAO {
 	}
 	
 	public void createTableReduction(){
-		String sql = "CREATE TABLE ratings_new_user(userid bigint, movieid bigint, rating decimal, id bigint)";
+		String sql = "CREATE TABLE ratings_new_user(userid bigint, movieid bigint, rating decimal)";
 		
 		try {
 			PreparedStatement st = connection.prepareStatement(sql);
@@ -157,8 +157,8 @@ public class RatingDAO {
 		}
 	}
 	
-	public void insertTableReduction(int user){
-		int qtdRatingsUser = this.getQtdRatingsUser(user) / 2;
+	public void insertTableReduction(int user, int divisor){
+		int qtdRatingsUser = this.getQtdRatingsUser(user) / divisor; // Pelo menos 1/2 dos filmes (padrão começa com 2)
 		String sql = "insert into ratings_new_user select * from ratings_norm where userid in(select userid from ratings_norm where movieid in (select movieid from ratings_norm where userid = " + user + ") group by userid having count(userid) > " + qtdRatingsUser + ")";
 		
 		try {
@@ -202,7 +202,7 @@ public class RatingDAO {
 			ResultSet rs = st.executeQuery();
 			
 			while(rs.next()){
-				Rating r = new Rating(rs.getInt("id"), rs.getInt("userid"), rs.getInt("movieid"), rs.getDouble("rating"));
+				Rating r = new Rating(rs.getInt("userid"), rs.getInt("movieid"), rs.getDouble("rating"));
 				ratings.add(r);
 			}
 			
