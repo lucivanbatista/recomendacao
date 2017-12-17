@@ -1,7 +1,9 @@
 package logic;
 
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -62,7 +64,7 @@ public class Prediction {
 
 			s = this.recomendacao.recomendarUsingAll(s);
 
-			if(s.getPearsonCorrelation() >= 0.6 || s.getPearsonCorrelation() <= -0.6){
+			if(s.getPearsonCorrelation() >= 0.7 || s.getPearsonCorrelation() <= -0.7){
 				similarities.put(userIdB, s); // Calcular as similaridades
 				ratingsMini.put(userIdB, ratingsB); // Usado para predição
 			}
@@ -96,13 +98,14 @@ public class Prediction {
 		Map<Integer, Integer> moviesReduction = reductionMovies(ratingsMini, ratingsA); // Filmes que A não possui; (Id movies, Qtd)
 		
 		System.out.println("Iniciando Predição 1");
-		Map<Integer, Double> predicoes1 = predicao1(moviesReduction, similarities, ratingsA);
+		List<Rating> predicoes1 = predicao1(moviesReduction, similarities, ratingsA);
 		
 		System.out.println("Iniciando Predição 2");
-		Map<Integer, Double> predicoes2 = predicao2(moviesReduction, similarities, ratingsA);
+		List<Rating> predicoes2 = predicao2(moviesReduction, similarities, ratingsA);
 		
 		exportSimilaritiesCSV(this.fileName, similarities.values());
-		exportPredictionsCSV(this.fileName, predicoes1, predicoes2);
+		exportPredictionsCSV(this.fileName+"_1", predicoes1);
+		exportPredictionsCSV(this.fileName+"_2", predicoes2);
 		exportNamesTitleCSV(this.fileName, ratingsA);
 	}
 	
@@ -137,14 +140,14 @@ public class Prediction {
 	}
 
 	//***ESTIMAR UMA NOTA QUE O USUÁRIO PODERÁ DAR***
-	public Map<Integer, Double> predicao2(Map<Integer, Integer> moviesReduction, Map<Integer, Similarity> similarities, List<Rating> ratingsA){
+	public List<Rating> predicao2(Map<Integer, Integer> moviesReduction, Map<Integer, Similarity> similarities, List<Rating> ratingsA){
 		double mean = 0; // Essa é a média de cada user sem o determinado filme que está sendo analisado, vai mudando durante a iteração
 		double ratingX = 0; // Nessa predição é necessário a média e a nota do determinado filme, que nesse caso será o ratingX e ficará mudando durante a iteração
 		double somatorioPredicao = 0; // Esse somatório é o numerador da fórmula da predição: (ratingX - mean) * similaridade
 		double somatorioSimilaridades = 0; // Esse somatório é o denominador da predição: (abs(similaridade))
 		double predicao = 0; // resultado final
 		double meanA = 0; // média de A (todos os valores)
-		Map<Integer, Double> predicoes = new HashMap<>(); // Key (Id do filme) e Values (Predições da nota desse filme)
+		List<Rating> predicoes = new ArrayList<>(); // Key (Id do filme) e Values (Predições da nota desse filme)
 		// Esse for é usado apenas para pegar a média de A
 		for(Rating rating : ratingsA){
 			meanA += rating.getRating();
@@ -174,7 +177,7 @@ public class Prediction {
 				ratingX = 0;
 			}
 			predicao = meanA + (somatorioPredicao / somatorioSimilaridades);
-			predicoes.put(movie, predicao);
+			predicoes.add(new Rating(movie,predicao));
 			somatorioPredicao = 0;
 			somatorioSimilaridades = 0;
 			predicao = 0;
@@ -182,14 +185,14 @@ public class Prediction {
 		return predicoes;
 	}
 	
-	public Map<Integer, Double> predicao1(Map<Integer, Integer> moviesReduction, Map<Integer, Similarity> similarities, List<Rating> ratingsA){
+	public List<Rating> predicao1(Map<Integer, Integer> moviesReduction, Map<Integer, Similarity> similarities, List<Rating> ratingsA){
 		// Para cada usuário, vou pegar o somatório das notas dos itens que os usuários deram para ele e dividir pelo modulo da similaridade do userA com ele
 		// Ou seja, pego todos os itens, depois para o usuário B, pego a nota e divido pela similaridade e no final desse item mostro a predicao dele
 		// Isso é tipo uma média
 		double somatorioPredicao = 0; // Esse é o somatório das notas que B deu para um determinado item
 		int cont = 0;
 		double predicao = 0; // resultado final
-		Map<Integer, Double> predicoes = new HashMap<>(); // Key (Id do filme) e Values (Predições da nota desse filme)
+		List<Rating> predicoes = new ArrayList<>();
 		
 		for(Integer movie : moviesReduction.keySet()){ // Todos os filmes classificados como possíveis filmes de A
 			for(Similarity s : similarities.values()){ // para cada similaridade (usuário) vou pegar o determinado filme e sua nota
@@ -201,7 +204,7 @@ public class Prediction {
 				}
 			}
 			predicao = somatorioPredicao / cont;
-			predicoes.put(movie, predicao);
+			predicoes.add(new Rating(movie, predicao));
 			cont = 0;
 			somatorioPredicao = 0;
 		}
@@ -265,15 +268,19 @@ public class Prediction {
 		}
 	}
 	
-	public void exportPredictionsCSV(String fileName, Map<Integer, Double> p1,  Map<Integer, Double> p2){
+	public void exportPredictionsCSV(String fileName, List<Rating> list){
 		Map<Integer, Movie> movies = moviedao.selectAllMovies();
 		try{
 			PrintWriter writer = new PrintWriter(fileName+"_predictions", "UTF-8");
-			writer.println("movieid;predicaoMedia;predicao2;rating;movieTitle");
+			writer.println("movieid;predicao;rating;movieTitle");
 			System.out.println("Exportando Arquivo de Predições...");
-			for (Integer movie : p1.keySet()) {
-				writer.println(movie+";"+p1.get(movie)+";"+(p1.get(movie)*5+";"+(p2.get(movie))+";"+movies.get(movie).getTitle()));
+			Collections.sort(list);
+			for (Rating r : list) {
+				writer.println(r.getMovieId()+";"+r.getRating()+";"+(r.getRating()*5)+";"+movies.get(r.getMovieId()).getTitle());
 			}
+//			for (Integer movie : list.keySet()) {
+//				writer.println(movie+";"+list.get(movie)+";"+(list.get(movie)*5+";"+movies.get(movie).getTitle()));
+//			}
 			System.out.println("Arquivo de Predições Exportado com sucesso!");
 
 			writer.close();
