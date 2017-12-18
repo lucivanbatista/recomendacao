@@ -22,6 +22,10 @@ public class Prediction {
 	private MovieDAO moviedao;
 	private String fileName;
 	private int divisor;
+	private final static double similarityPearsonP = 0.6;
+	private final static double similarityPearsonN = -0.6;
+	private final static int qtdMinimunUserSimilar = 10;
+	private final static double ratingMinimum = 0.5;
 
 	public Prediction(String fileName) {
 		recomendacao = new Recomendar();
@@ -64,7 +68,7 @@ public class Prediction {
 
 			s = this.recomendacao.recomendarUsingAll(s);
 
-			if(s.getPearsonCorrelation() >= 0.7 || s.getPearsonCorrelation() <= -0.7){
+			if(s.getPearsonCorrelation() >= similarityPearsonP || s.getPearsonCorrelation() <= similarityPearsonN){
 				similarities.put(userIdB, s); // Calcular as similaridades
 				ratingsMini.put(userIdB, ratingsB); // Usado para predição
 			}
@@ -79,7 +83,7 @@ public class Prediction {
 		
 		// ideia fazer, tipo um loop, caso ele não tenha usuário similares, então eu faço novamente o mesmo processo e coloco o código abaixo em uma função
 		// colocar para pegar o /3 e depois /4 lá no ratingdao isso deopis da deleção das tabelas
-		if(similarities.keySet().size() < 5){
+		if(similarities.keySet().size() < qtdMinimunUserSimilar){
 			ratingsMini = null;
 			ratingsA = null;
 			similarities = null;
@@ -103,9 +107,13 @@ public class Prediction {
 		System.out.println("Iniciando Predição 2");
 		List<Rating> predicoes2 = predicao2(moviesReduction, similarities, ratingsA);
 		
+		Collections.sort(predicoes1);
+		Collections.sort(predicoes2);
+		
 		exportSimilaritiesCSV(this.fileName, similarities.values());
 		exportPredictionsCSV(this.fileName+"_1", predicoes1);
 		exportPredictionsCSV(this.fileName+"_2", predicoes2);
+		exportPredictionsComparacaoCSV(fileName, predicoes1, predicoes2);
 		exportNamesTitleCSV(this.fileName, ratingsA);
 	}
 	
@@ -274,9 +282,10 @@ public class Prediction {
 			PrintWriter writer = new PrintWriter(fileName+"_predictions", "UTF-8");
 			writer.println("movieid;predicao;rating;movieTitle");
 			System.out.println("Exportando Arquivo de Predições...");
-			Collections.sort(list);
 			for (Rating r : list) {
-				writer.println(r.getMovieId()+";"+r.getRating()+";"+(r.getRating()*5)+";"+movies.get(r.getMovieId()).getTitle());
+				if(r.getRating() >= ratingMinimum){
+					writer.println(r.getMovieId()+";"+r.getRating()+";"+(r.getRating()*5)+";"+movies.get(r.getMovieId()).getTitle());
+				}
 			}
 //			for (Integer movie : list.keySet()) {
 //				writer.println(movie+";"+list.get(movie)+";"+(list.get(movie)*5+";"+movies.get(movie).getTitle()));
@@ -306,4 +315,27 @@ public class Prediction {
 		}
 	}
 
+	public void exportPredictionsComparacaoCSV(String fileName, List<Rating> predicoes1, List<Rating> predicoes2){
+		Map<Integer, Movie> movies = moviedao.selectAllMovies();
+		try{
+			PrintWriter writer = new PrintWriter(fileName+"_predictionsComparacao", "UTF-8");
+			writer.println("movieid;ratingPredicao1;ratingPredicao2;movieTitle");
+			System.out.println("Exportando Arquivo de Predições...");
+			for (Rating r : predicoes2) {
+				for(Rating s : predicoes1){
+					if(r.getMovieId() == s.getMovieId()){
+						if(r.getRating() >= ratingMinimum && s.getRating() >= ratingMinimum){
+							writer.println(r.getMovieId()+";"+(s.getRating()*5)+";"+(r.getRating()*5)+";"+movies.get(r.getMovieId()).getTitle());
+						}
+					}
+				}
+			}
+			System.out.println("Arquivo de Predições Comparados Exportado com sucesso!");
+
+			writer.close();
+		}catch (Exception e) {
+			System.out.println("[ERROR]: "+e.toString());
+		}
+	}
+	
 }
