@@ -22,10 +22,10 @@ public class Prediction {
 	private MovieDAO moviedao;
 	private String fileName;
 	private int divisor;
-	private final static double similarityPearsonP = 0.6;
-	private final static double similarityPearsonN = -0.6;
+	private final static double similarityPearsonP = 0.65;
+	private final static double similarityPearsonN = -0.65;
 	private final static int qtdMinimunUserSimilar = 10;
-	private final static double ratingMinimum = 0.5;
+	private final static double ratingMinimum = 0.7;
 
 	public Prediction(String fileName) {
 		recomendacao = new Recomendar();
@@ -73,7 +73,6 @@ public class Prediction {
 				ratingsMini.put(userIdB, ratingsB); // Usado para predição
 			}
 		}
-		System.out.println("Finalizado os cálculos de similaridade!");
 		
 		ratingsAll = null; // Garbage Collection irá funcionar
 		System.gc();
@@ -101,10 +100,9 @@ public class Prediction {
 	public void finalPredicao(Map<Integer, List<Rating>> ratingsMini, List<Rating> ratingsA, Map<Integer, Similarity> similarities){
 		Map<Integer, Integer> moviesReduction = reductionMovies(ratingsMini, ratingsA); // Filmes que A não possui; (Id movies, Qtd)
 		
-		System.out.println("Iniciando Predição 1");
+		System.out.println("Iniciando Predições");
 		List<Rating> predicoes1 = predicao1(moviesReduction, similarities, ratingsA);
 		
-		System.out.println("Iniciando Predição 2");
 		List<Rating> predicoes2 = predicao2(moviesReduction, similarities, ratingsA);
 		
 		Collections.sort(predicoes1);
@@ -115,6 +113,7 @@ public class Prediction {
 		exportPredictionsCSV(this.fileName+"_2", predicoes2);
 		exportPredictionsComparacaoCSV(fileName, predicoes1, predicoes2);
 		exportNamesTitleCSV(this.fileName, ratingsA);
+		System.out.println("---------------");
 	}
 	
 	public Map<Integer, Integer> reductionMovies(Map<Integer,List<Rating>> ratingsMini, List<Rating> ratingsA){ // RECOMENDAR FILMES
@@ -142,7 +141,6 @@ public class Prediction {
 		// semelhantes assistiram, sobrando apenas os mais assistidos por eles
 		// Agora é só realizar mais um cálculo da predição
 		
-		System.out.println("----------------");
 		System.out.println("Quantidade de Filmes Possíveis PÓS REDUÇÃO: " + movies.size());
 		return movies;
 	}
@@ -237,26 +235,21 @@ public class Prediction {
 	}
 	
 	public List<Rating> preProcessamentoOtimizacao(int userId){
-		System.out.println("Organizando o banco... criando tabela para otimização");
+		System.out.println("Organizando o banco: criando tabela para otimização, inserido e colocando ratings na memória (isso deve demorar um pouco)");
 		this.ratingdao.createTableReduction();
-		System.out.println("Inserindo elementos na tabela para otimização...");
 		this.ratingdao.insertTableReduction(userId, this.divisor);
-		System.out.println("Recebendo ratings...");
 		List<Rating> ratings = this.ratingdao.selectTableReduction(userId);
 		return ratings;
 	}
 
 	public Map<Integer,List<Rating>> processamentoOtimizacao(List<Rating> ratings, Map<Integer,List<Rating>> ratingsAll){
 		// Resumo: pegarei todos os ratings e irei colocar para cada rating em seu devido id (distribuição dos ratings nas listas dos userId dentro desse map)
-		System.out.println("Organizando ratings...");
+		System.out.println("Organizando ratings dos usuários...");
 		for(Rating r : ratings){
 			List<Rating> temp = ratingsAll.get(r.getUserId());
 			temp.add(r);
 			ratingsAll.put(r.getUserId(), temp);
 		}
-		
-		System.out.println("Ratings dos usuários organizados!");
-
 		return ratingsAll;
 	}
 
@@ -268,8 +261,6 @@ public class Prediction {
 			for (Similarity s : list) {
 				writer.println(s.getUserIdA()+";"+s.getUserIdB()+";"+s.getIntersection()+";"+s.getSimilarity()+";"+s.getDistanceJaccard()+";"+s.getDistanceCosseno()+";"+s.getPearsonCorrelation());
 			}
-			System.out.println("Arquivo de Similaridades Exportado com sucesso!");
-
 			writer.close();
 		}catch (Exception e) {
 			System.out.println("[ERROR]: "+e.toString());
@@ -287,11 +278,6 @@ public class Prediction {
 					writer.println(r.getMovieId()+";"+r.getRating()+";"+(r.getRating()*5)+";"+movies.get(r.getMovieId()).getTitle());
 				}
 			}
-//			for (Integer movie : list.keySet()) {
-//				writer.println(movie+";"+list.get(movie)+";"+(list.get(movie)*5+";"+movies.get(movie).getTitle()));
-//			}
-			System.out.println("Arquivo de Predições Exportado com sucesso!");
-
 			writer.close();
 		}catch (Exception e) {
 			System.out.println("[ERROR]: "+e.toString());
@@ -307,8 +293,6 @@ public class Prediction {
 			for (Rating r : list) {
 				writer.println(r.getMovieId()+";"+movies.get(r.getMovieId()).getTitle());
 			}
-			System.out.println("Arquivo de Filmes de A Exportado com sucesso!");
-
 			writer.close();
 		}catch (Exception e) {
 			System.out.println("[ERROR]: "+e.toString());
@@ -330,8 +314,6 @@ public class Prediction {
 					}
 				}
 			}
-			System.out.println("Arquivo de Predições Comparados Exportado com sucesso!");
-
 			writer.close();
 		}catch (Exception e) {
 			System.out.println("[ERROR]: "+e.toString());
